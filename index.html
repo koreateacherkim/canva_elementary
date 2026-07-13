@@ -61,10 +61,57 @@
             transform: scale(1.02);
         }
         
-        /* 섹션별 충분한 여백을 주어 스크롤 이동 시 정확한 위치에 멈추도록 조정 */
+        /* 섹션별 충분한 여백 */
         section {
             scroll-margin-top: 100px;
-            min-height: 50vh;
+            min-height: 40vh;
+        }
+
+        /* QR 모달 (전체화면 확대) 스타일 */
+        #qr-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        #qr-modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        #qr-modal img {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        #qr-modal.show img {
+            transform: scale(1);
+        }
+
+        #qr-modal .close-hint {
+            position: absolute;
+            bottom: 2rem;
+            color: white;
+            font-size: 1.25rem;
+            font-weight: 500;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            background: rgba(255,255,255,0.2);
+            padding: 0.5rem 1.5rem;
+            border-radius: 2rem;
         }
     </style>
 </head>
@@ -147,12 +194,19 @@
                         <p id="copy-msg" class="text-sm text-green-300 mt-2 opacity-0 transition-opacity">주소가 복사되었습니다! 붙여넣기(Ctrl+V) 하세요.</p>
                     </div>
                     
-                    <div class="bg-white p-4 rounded-2xl shadow-2xl shrink-0 text-center">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fjoo.is%2F%EC%BA%94%EB%B0%94%EC%9E%90%EA%B8%B0%EC%86%8C%EA%B0%9C&color=4c1d95" 
-                             alt="QR Code for Template" 
-                             class="w-40 h-40 md:w-48 md:h-48 rounded-xl mb-3">
+                    <div class="bg-white p-4 rounded-2xl shadow-2xl shrink-0 text-center cursor-pointer hover:scale-105 transition-transform" onclick="openQrModal()">
+                        <!-- QR 이미지 툴팁 안내 추가 -->
+                        <div class="relative group">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https%3A%2F%2Fjoo.is%2F%EC%BA%94%EB%B0%94%EC%9E%90%EA%B8%B0%EC%86%8C%EA%B0%9C&color=4c1d95" 
+                                 alt="QR Code for Template" 
+                                 id="qr-image-thumbnail"
+                                 class="w-40 h-40 md:w-48 md:h-48 rounded-xl mb-3 border-2 border-slate-100">
+                            <div class="absolute inset-0 bg-black/40 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                <i class="fa-solid fa-magnifying-glass-plus text-white text-3xl"></i>
+                            </div>
+                        </div>
                         <p class="text-slate-800 font-jua text-lg">카메라로 찰칵!</p>
-                        <p class="text-slate-500 text-xs font-mono mt-1 break-all px-2 w-48">joo.is/캔바자기소개</p>
+                        <p class="text-slate-500 text-xs font-mono mt-1 break-all px-2 w-48 mx-auto">joo.is/캔바자기소개</p>
                     </div>
                 </div>
             </div>
@@ -285,7 +339,29 @@
 
     </main>
 
+    <!-- QR 확대 모달 창 -->
+    <div id="qr-modal" onclick="closeQrModal()">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=https%3A%2F%2Fjoo.is%2F%EC%BA%94%EB%B0%94%EC%9E%90%EA%B8%B0%EC%86%8C%EA%B0%9C&color=4c1d95" alt="Enlarged QR Code">
+        <div class="close-hint"><i class="fa-solid fa-xmark mr-2"></i>클릭하여 닫기</div>
+    </div>
+
     <script>
+        // QR 확대/축소 기능
+        const qrModal = document.getElementById('qr-modal');
+        
+        function openQrModal() {
+            qrModal.classList.add('show');
+            document.body.style.overflow = 'hidden'; // 뒤쪽 배경 스크롤 방지
+        }
+
+        function closeQrModal() {
+            qrModal.classList.remove('show');
+            setTimeout(() => {
+                document.body.style.overflow = 'auto'; // 스크롤 원상복구
+            }, 300); // 애니메이션 시간만큼 대기
+        }
+
+        // 주소 복사 기능
         function copyLink() {
             const link = "https://joo.is/캔바자기소개";
             const tempInput = document.createElement("input");
